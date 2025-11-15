@@ -35,7 +35,4 @@ public class UserController {
         return ResponseEntity.ok(userService.updateSettings(id, settings));
     }
 
-
-
-
 }
