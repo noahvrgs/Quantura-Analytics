@@ -25,16 +25,6 @@ public class UserService {
     }
 
     @Override
-    public User registerUser(User user, String rawPassword){
-        user.setPasswordHash(encoder.encode(rawPassword));
-
-        UserSettings settings = new UserSettings();
-        user.setSettings(settings);
-
-        return userRepo.save(user);
-    }
-
-    @Override
     public User findById(Long id){
         return userRepo.findById(id).orElseThrow(() -> new RuntimeException("User not found."));
     }
@@ -56,5 +46,43 @@ public class UserService {
 
         return settingsRepo.save(currentSettings);
     }
+
+    // ===== << Register a User w/ DTO Returns >> =====
+    @Override
+    public UserResponseDTO registerUser(RegisterRequestDTO req){
+        org.apache.catalina.User user = new User();
+        user.setEmail(req.getEmail());
+        user.setPassword(encoder.encoder(req.getPassword()));
+        userRepo.save(user);
+
+        UserSettings settings = new UserSettings(user);
+        settingsRepo.save(settings);
+
+        return new UserResponseDTO(user.getId(), user.getEmail());
+    }
+
+    /*
+     *  NEEDS JWT LOGIC BEFORE IMPLEMENTATION
+     */
+
+    // ===== << User Login >> =====
+    // @Override
+    // public String login(LoginRequestDTO req){
+    //     org.apache.catalina.User user = userRepo.findByEmail(req.getEmail()).orElseThrow(() -> new RuntimeException("Invalid Credentials."));
+
+    //     if(!encoder.matches(req.getPassword(), user.getPassword())){
+    //         throw new RuntimeException("Invalid Credentials.");
+    //     }
+    //     return jwtUtil.generateToken(user.getEmail());
+    // }
+
+    // ===== << Get a User by ID w/ DTO Response >> =====
+    @Override
+    public UserResponseDTO getUserByIdDTO(Long id){
+        User user = userRepo.findById(id).orElseThrow(() -> new RuntimeException("User Not Found."));
+        return new UserResponseDTO(user.getId(), user.getEmail(), user.getRole());
+    }
+
+
     
 }
